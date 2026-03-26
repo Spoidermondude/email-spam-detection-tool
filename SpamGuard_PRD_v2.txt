@@ -1,0 +1,58 @@
+1.1 Project Name & Description
+1.2 Business Goals & Objectives
+The project pursues the following goals:
+Build a fully functional ML-powered web application as a minor project submission for AKTU BTech IT curriculum.
+Demonstrate end-to-end understanding of the NLP + ML pipeline — from raw text to a deployed, interactive prediction tool.
+Achieve minimum model performance of 97% accuracy, 96% precision, and 97% recall on the test dataset.
+Deliver a usable product that solves a real problem — spam accounts for 45–49% of all global email traffic and remains a leading phishing vector.
+Produce clean, documented, extensible code that can serve as a foundation for future upgrades (BERT, URL scanning, browser extension).
+1.3 Target Audience & User Personas
+Persona 1 — Ravi Sharma, Small-Business Owner
+Persona 2 — Priya Nair, IT Security Analyst
+Persona 3 — Ayush Verma, BTech IT Student
+2.1 Feature List with Priority
+2.2 Detailed Feature Descriptions
+Feature 1 — User Registration & Login  [Must-Have]
+Users create an account with their email and password. Passwords are hashed with bcrypt before storage — plain-text passwords are never written to the database. On login, Flask-Login creates a server-side session. All protected routes redirect unauthenticated users back to /login automatically using the @login_required decorator.
+Feature 2 — Email Classification  [Must-Have]
+The core feature. User pastes an email subject (optional) and body (required) into the dashboard form. On submission, the system:
+Concatenates subject + body into a single string.
+Runs the NLP preprocessing pipeline (lowercase → URL removal → punctuation removal → tokenize → stop-word removal → Porter stemming).
+Applies the pre-trained TF-IDF vectorizer to convert text to a numerical feature vector.
+Passes the vector to the Multinomial Naive Bayes model which returns SPAM or HAM plus a probability score.
+Saves the result to the database and redirects the user to the result page.
+Feature 3 — Confidence Score  [Must-Have]
+The Naive Bayes model outputs a posterior probability for the predicted class. This is displayed as a percentage (e.g., 94.3%) on the result page. A high confidence score (>90%) means the model is very sure. A lower score (55–70%) signals an uncertain classification worth double-checking manually.
+Feature 4 — Classification History  [Must-Have]
+Every successful classification is saved to the classification_records table linked to the logged-in user. The /history page renders these as a Bootstrap table sorted by most recent first. Each row shows: subject preview, date & time, color-coded SPAM/HAM badge, and confidence score. Users only ever see their own records — SQL queries always filter by user_id.
+Feature 5 — Dashboard Stat Cards  [Must-Have]
+Three summary cards at the top of the dashboard show live counts for the logged-in user: Total Emails Checked, Spam Detected, and Legitimate Emails. These are calculated with COUNT queries on every dashboard load and show 0 for new users with no history.
+Feature 6 — Color-Coded Result Page  [Must-Have]
+The result page uses a full-width banner — red (#C0392B) for SPAM with a warning icon, green (#1E8449) for HAM with a checkmark icon. Color AND icon are always used together to ensure accessibility for color-blind users. The verdict text (SPAM / SAFE EMAIL) is displayed in large Inter ExtraBold 36px text inside the banner.
+Feature 7 — Route Protection & Security  [Must-Have]
+Flask-Login's @login_required protects /dashboard, /classify, /result, and /history. Flask-WTF adds CSRF tokens to all forms. SQLAlchemy ORM prevents SQL injection by using parameterised queries. Jinja2 auto-escaping prevents XSS. Passwords are bcrypt-hashed with cost factor 12.
+3.1 Page Count
+3.2 Page-by-Page Breakdown
+3.3 Navigation Flow
+4.1 New User Journey — First-Time Use
+4.2 Returning User Journey
+User visits /login → enters credentials → sees dashboard with all historical stat counts loaded from DB.
+Pastes a new email → clicks Analyze → sees result → stat cards update by +1 on return to dashboard.
+Navigates to History → reviews past classifications → checks if a previous email was correctly flagged.
+4.3 Key Actions Users Must Complete
+5.1 Model Performance KPIs
+5.2 Application & UX Metrics
+5.3 Academic / Project Submission Criteria
+A. Tech Stack Summary
+B. Colour Palette
+C. File Structure
+D. Recommended Build Order
+train.py — train model, save vectorizer.pkl and model.pkl
+model.py — preprocess() and predict() functions
+app.py — basic Flask app, /classify route working without auth first
+Add SQLAlchemy models (User + ClassificationRecord)
+Add Flask-Login auth (register, login, logout, @login_required)
+Build HTML templates one by one: base.html → dashboard → result → history → login → register
+Add Flask-WTF CSRF tokens to all forms
+Test all 10 functional requirements manually, fix issues
+— End of Document —

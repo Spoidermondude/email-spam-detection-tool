@@ -1,0 +1,98 @@
+Introduction
+This document defines the complete technology stack recommended for building SpamGuard AI — a web-based email spam detection system powered by NLP and supervised machine learning. Every technology choice is grounded in the specific requirements extracted from the PRD v2, the Design Document, and the Project Report: real-time single-email classification, user authentication, classification history, a confidence score display, and a clean Bootstrap-based UI.
+The stack is deliberately chosen to be lightweight, production-capable within a student project timeline, and extensible toward future upgrades (BERT, browser extension, multi-language support) described in the project scope.
+Recommendation: Jinja2 Templating with Flask (Server-Side Rendering)
+Given that SpamGuard AI is a form-driven, server-rendered web application with a clear set of pages (/dashboard, /result, /history, /login, /register), a full JavaScript SPA framework such as React or Vue introduces unnecessary complexity. The PRD's own Build Order appendix specifies HTML templates built one by one — base.html → dashboard → result → history — confirming that SSR is the intended architecture.
+Why Jinja2 + Flask SSR?
+Zero build pipeline overhead — no Webpack, Vite, or npm complexity for an academic submission deadline.
+Jinja2 template inheritance via base.html enables the shared navbar, sidebar, and footer layout described in the Design Document without duplicating markup.
+All protected routes (/dashboard, /result, /history) are server-side guarded with @login_required — the session state is managed on the server, so SSR is the natural fit.
+Classification form submission is a standard HTTP POST → redirect → GET, which is exactly what Jinja2 + Flask handles natively via Flask's redirect() and url_for().
+Inference time target is < 50 ms server-side. The browser receives a pre-rendered verdict page — no client-side API calls or loading spinners needed.
+When to Upgrade
+If the future scope BERT upgrade or browser extension requires a JSON API, add a /api/classify endpoint returning JSON alongside the existing SSR routes. The Jinja2 templates remain unchanged.
+Recommendation: Bootstrap 5.3 + Custom CSS Variables
+The PRD Appendix explicitly lists Bootstrap 5.3.x (CDN) as the CSS framework, and the Design Document specifies exact hex codes as CSS custom properties. This combination is optimal for SpamGuard AI's UI requirements.
+Bootstrap 5.3 — Why It Fits
+The 12-column grid with 24px gutters (gutter-x-4) described in the Design Document maps directly to Bootstrap's grid system, giving the 3-column stat card layout, the 2-column sidebar+content dashboard, and the centered form cards out of the box.
+Bootstrap's utility classes handle the navbar (64px fixed top), card border-radius (12px via rounded-3), spacing, and responsive breakpoints (mobile side-padding of 24px) without writing custom CSS for each.
+Navbar, form controls, table styles, and badge components all have Bootstrap equivalents — reducing custom CSS to colour overrides only.
+CDN delivery means no npm install step for the frontend, keeping the project within its 8-file structure target.
+CSS Custom Properties — Design Document Palette
+The Design Document specifies all colours as :root CSS variables. Layering these on top of Bootstrap ensures brand colours override Bootstrap defaults without !important hacks:
+--color-primary: #1A3C5E — navbar background, section headings
+--color-accent: #2E86C1 — primary buttons, links, active states
+--color-spam: #EF4444 — SPAM verdict banner background
+--color-ham: #22C55E — HAM verdict banner background
+--color-teal: #1ABC9C — stat card accent bar, badges
+Typography
+Inter from Google Fonts CDN — loaded as specified in the Design Document. One <link> tag in base.html; all type scale rules (48px hero, 36px verdict, 32px stat card number) implemented as utility classes or direct CSS.
+Recommendation: Python 3.10+ with Flask 2.3.x
+Flask is the correct backend choice for SpamGuard AI, and is confirmed in every project document. Here is why it outperforms alternatives for this specific use case.
+Flask vs. Alternatives
+Key Flask Components Used
+Flask-Login 0.6.x — user_loader, @login_required decorator, current_user proxy. Handles session management for all 6 protected routes.
+Flask-WTF 1.1.x — CSRF token generation and validation on every form (dashboard classify form, login, register). One line in forms; one tag in templates.
+Flask-Bcrypt 4.0.x — bcrypt.generate_password_hash() on registration; bcrypt.check_password_hash() on login. Passwords are never stored in plain text.
+Flask's built-in error handlers — @app.errorhandler(404) and @app.errorhandler(500) prevent raw tracebacks from reaching the user (PRD requirement: 0 unhandled server errors).
+Recommendation: SQLite (via SQLAlchemy 2.0.x ORM)
+SQLite is the right database for SpamGuard AI's current scope. The following analysis justifies this against alternatives.
+Why SQLite?
+Zero configuration — the database file (instance/database.db) is auto-created by SQLAlchemy on first run. No database server to install, start, or configure. This directly enables the PRD's requirement that any student can retrain and redeploy in under one day.
+Single-file portability — the entire dataset ships with the project repository (or is gitignored cleanly). Graders and collaborators run the app instantly.
+Read-heavy workload — SpamGuard's database operations are: INSERT one ClassificationRecord per analysis, SELECT history records per user. SQLite handles thousands of such operations per second with no bottleneck.
+Not multi-user concurrent write — the application serves one user at a time in development and low-traffic academic deployment. SQLite's write serialisation is not a constraint here.
+SQLAlchemy ORM — Why not raw SQL?
+PRD Code Quality requirement explicitly states: 'No raw SQL'. SQLAlchemy's declarative models (class User(db.Model), class ClassificationRecord(db.Model)) satisfy this requirement.
+Schema migrations via Flask-Migrate (Alembic) can be added in one command if the model changes — no manual ALTER TABLE.
+Switching to PostgreSQL for production requires changing only the SQLALCHEMY_DATABASE_URI config string — all ORM queries remain identical.
+Data Models Required
+Future Upgrade Path
+When the project scales to multi-user production (future scope), replace SQLite with PostgreSQL by changing one environment variable. SQLAlchemy abstracts the difference entirely.
+ML / NLP Core
+Flask Ecosystem
+Explainability & Charts
+Recommendation: Render.com (Free Tier) — Primary Option
+Render is the best deployment target for SpamGuard AI given the academic context, zero cost requirement, and Python/Flask stack. Here is the full deployment stack:
+Option A — Render.com (Recommended for Academic Demo)
+Free tier supports Python web services with auto-deploy from GitHub. One render.yaml file in the repo root configures the service — no dashboard clicking.
+Persistent disk (1 GB free) mounts at /data — set SQLALCHEMY_DATABASE_URI=sqlite:////data/database.db so the SQLite file survives redeploys.
+Auto-HTTPS, custom subdomain (spamguard.onrender.com), zero DevOps knowledge required.
+Deploy command: gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT
+Add a requirements.txt (pip freeze) and a start command — Render handles the rest.
+Option B — Railway.app
+Similar free tier, GitHub-connected, auto-detects Python. Slightly simpler if the student prefers a GUI-first experience.
+Provision a PostgreSQL add-on with one click if SQLite persistence is a concern on ephemeral filesystems.
+Option C — PythonAnywhere (Academic-Friendly)
+Free tier natively supports Flask WSGI apps. Specifically designed for Python beginners and student projects.
+No Docker knowledge required. Upload files via the web interface or git clone.
+500 MB disk, 1 worker — sufficient for single-user demo and viva presentation.
+Production WSGI Server
+Gunicorn 21.x — replaces Flask's development server in all deployed environments. Two workers are sufficient for demo traffic. Never run flask run in production.
+Set FLASK_DEBUG=0 and FLASK_ENV=production in the hosting platform's environment variables.
+Security Checklist for Deployment
+Generate a strong SECRET_KEY (python -c "import secrets; print(secrets.token_hex(32))") and set it as an environment variable — never hardcode it.
+Set SESSION_COOKIE_SECURE=True and SESSION_COOKIE_HTTPONLY=True in Flask config when running on HTTPS.
+Keep model.pkl and vectorizer.pkl outside the web root — they are served only by the Python process, never as static files.
+Local Development Environment
+Virtual Environment
+python -m venv venv && source venv/bin/activate (Linux/Mac) or venv\Scripts\activate (Windows).
+Pin all dependencies: pip freeze > requirements.txt after every install. This ensures Render/Railway builds reproduce the exact environment.
+IDE & Editor
+VS Code with the Python extension (Pylance) — IntelliSense for Flask, SQLAlchemy, scikit-learn APIs. Free, industry-standard, runs on all platforms.
+Install the Jinja extension for VS Code for template syntax highlighting in .html files.
+SQLite Viewer extension — inspect database.db contents without leaving VS Code.
+Version Control
+Git + GitHub — commit after each PRD Build Order step. Enables rollback if a template change breaks authentication.
+.gitignore must include: venv/, instance/, *.pkl, .env, __pycache__/. The .pkl model files are large and contain trained weights; regenerate via train.py on the server.
+Testing Workflow
+ML Training Workflow
+Jupyter Notebook (optional) — exploratory data analysis on the SpamAssassin / SMS Spam Collection datasets before finalising the TF-IDF + Naive Bayes pipeline.
+train.py CLI — the canonical training script. Run: python train.py --dataset data/spam.csv. Outputs vectorizer.pkl and model.pkl. Prints accuracy, precision, recall, F1 to stdout.
+MLflow (optional, future scope) — tracks experiment parameters and metrics if the student explores multiple models (SVM, Logistic Regression) for the literature review comparison table.
+Code Quality
+flake8 — linting. Enforce PEP 8 compliance. Run: flake8 app.py model.py train.py.
+black — auto-formatter. Run: black . before every commit. Eliminates style debates.
+Pre-commit hooks — automate flake8 + black on git commit via the pre-commit library.
+Complete Tech Stack Summary
+— End of Tech Stack Document —

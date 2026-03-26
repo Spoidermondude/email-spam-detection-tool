@@ -1,0 +1,81 @@
+:root {
+  --color-primary: #1A3C5E;
+  --color-accent: #2E86C1;
+  --color-teal: #1ABC9C;
+  --color-spam: #EF4444;
+  --color-ham: #22C55E;
+  --color-bg: #F9FAFB;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-text: #111827;
+  --color-muted: #6B7280;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.app-navbar {
+  height: 64px;
+  background: var(--color-primary);
+}
+
+.app-navbar .navbar-brand {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.btn-accent {
+  --bs-btn-bg: var(--color-accent);
+  --bs-btn-border-color: var(--color-accent);
+  --bs-btn-hover-bg: #2573a6;
+  --bs-btn-hover-border-color: #2573a6;
+  --bs-btn-color: #fff;
+}
+
+.card {
+  border-color: var(--color-border);
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 6px;
+  background: var(--color-teal);
+}
+
+.verdict-banner {
+  border-radius: 12px;
+  padding: 20px;
+  color: #fff;
+}
+.verdict-banner .verdict-title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.verdict-banner .verdict-sub {
+  margin: 6px 0 0 0;
+  opacity: 0.95;
+}
+
+.full-width-banner {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  border-radius: 0;
+}
+
+.muted {
+  color: var(--color-muted);
+}
+

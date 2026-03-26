@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Server Error · SpamGuard AI{% endblock %}
+
+{% block content %}
+  <div class="text-center py-5">
+    <div class="display-6 fw-bold">500</div>
+    <p class="text-secondary mt-2">Something went wrong on the server.</p>
+    <a class="btn btn-accent mt-3" href="{{ url_for('home') }}">Go home</a>
+  </div>
+{% endblock %}
+

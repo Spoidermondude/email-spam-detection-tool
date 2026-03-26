@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}SpamGuard AI{% endblock %}
+
+{% block content %}
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <h1 class="display-5 fw-bold" style="letter-spacing:-0.03em;">
+        ML-powered email spam detection, in seconds.
+      </h1>
+      <p class="lead text-secondary mt-3">
+        Paste an email subject and body to get an instant <strong>SPAM</strong> / <strong>HAM</strong> verdict with a confidence score, plus a private history tied to your account.
+      </p>
+      <div class="d-flex gap-2 mt-4">
+        <a class="btn btn-accent btn-lg" href="{{ url_for('register') }}">Get started</a>
+        <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('login') }}">I already have an account</a>
+      </div>
+      <p class="small muted mt-3 mb-0">
+        Built with Flask SSR + Bootstrap 5.3. Your saved results are visible only to you.
+      </p>
+    </div>
+    <div class="col-lg-5">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="fw-semibold">What you’ll get</div>
+            <span class="badge text-bg-light border" style="border-color: var(--color-border)!important;">SpamGuard AI</span>
+          </div>
+          <hr class="my-3" />
+          <ul class="mb-0">
+            <li class="mb-2">Secure registration & login (bcrypt + sessions)</li>
+            <li class="mb-2">Email classification (TF‑IDF + Naive Bayes)</li>
+            <li class="mb-2">Confidence score on every result</li>
+            <li class="mb-2">History table with verdict badges</li>
+            <li class="mb-0">Dashboard stats (total / spam / legitimate)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

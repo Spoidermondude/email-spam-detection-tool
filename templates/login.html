@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Login · SpamGuard AI{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h4 fw-bold mb-1">Welcome back</h2>
+          <p class="text-secondary mb-4">Log in to access your dashboard and history.</p>
+
+          <form method="post" novalidate>
+            {{ form.csrf_token }}
+            <div class="mb-3">
+              <label class="form-label">{{ form.email.label.text }}</label>
+              {{ form.email(class="form-control", placeholder="you@example.com") }}
+              {% for e in form.email.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ form.password.label.text }}</label>
+              {{ form.password(class="form-control", placeholder="••••••••") }}
+              {% for e in form.password.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <button class="btn btn-accent w-100" type="submit">{{ form.submit.label.text }}</button>
+          </form>
+
+          <div class="text-center small mt-3">
+            New here? <a href="{{ url_for('register') }}">Create an account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

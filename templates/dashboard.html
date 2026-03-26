@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SpamGuard AI{% endblock %}
+
+{% block content %}
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Dashboard</h1>
+      <div class="text-secondary small">Paste an email to analyze it with the ML model.</div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card rounded-3 stat-card h-100">
+        <div class="card-body p-4">
+          <div class="text-secondary small">Total Emails Checked</div>
+          <div class="fs-2 fw-bold mt-1">{{ total }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card rounded-3 stat-card h-100">
+        <div class="card-body p-4">
+          <div class="text-secondary small">Spam Detected</div>
+          <div class="fs-2 fw-bold mt-1">{{ spam }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card rounded-3 stat-card h-100">
+        <div class="card-body p-4">
+          <div class="text-secondary small">Legitimate Emails</div>
+          <div class="fs-2 fw-bold mt-1">{{ ham }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if not model_ready %}
+    <div class="alert alert-warning">
+      <div class="fw-semibold mb-1">Model not ready</div>
+      <div class="small">{{ model_error }}</div>
+    </div>
+  {% endif %}
+
+  <div class="card rounded-3 shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="h5 fw-bold mb-3">Analyze an email</h2>
+      <form method="post" action="{{ url_for('classify') }}" novalidate>
+        {{ form.csrf_token }}
+        <div class="mb-3">
+          <label class="form-label">{{ form.subject.label.text }}</label>
+          {{ form.subject(class="form-control", placeholder="Invoice for March (optional)") }}
+          {% for e in form.subject.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{{ form.body.label.text }}</label>
+          {{ form.body(class="form-control", rows="8", placeholder="Paste the email body here...") }}
+          {% for e in form.body.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-accent" type="submit" {% if not model_ready %}disabled{% endif %}>
+          {{ form.submit.label.text }}
+        </button>
+        <a class="btn btn-outline-secondary ms-2" href="{{ url_for('history') }}">View history</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+

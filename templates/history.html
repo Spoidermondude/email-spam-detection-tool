@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}History · SpamGuard AI{% endblock %}
+
+{% block content %}
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Classification history</h1>
+      <div class="text-secondary small">Your recent analyses (most recent first).</div>
+    </div>
+    <a class="btn btn-accent" href="{{ url_for('dashboard') }}">Analyze email</a>
+  </div>
+
+  <div class="card rounded-3 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="px-3">Subject</th>
+              <th>Date &amp; time</th>
+              <th>Verdict</th>
+              <th class="text-end pe-3">Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if records|length == 0 %}
+              <tr>
+                <td colspan="4" class="text-center text-secondary py-4">
+                  No history yet. Analyze your first email from the dashboard.
+                </td>
+              </tr>
+            {% endif %}
+            {% for r in records %}
+              <tr>
+                <td class="px-3">
+                  <a class="text-decoration-none" href="{{ url_for('result', record_id=r.id) }}">
+                    {{ (r.subject or r.body[:60]) | e }}
+                  </a>
+                </td>
+                <td>{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td>
+                  {% if r.verdict == "SPAM" %}
+                    <span class="badge text-bg-danger">SPAM</span>
+                  {% else %}
+                    <span class="badge text-bg-success">HAM</span>
+                  {% endif %}
+                </td>
+                <td class="text-end pe-3">{{ (r.confidence * 100) | round(1) }}%</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
